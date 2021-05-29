@@ -16,7 +16,7 @@
 
 ### User Credential
     Email Address: admin@gmail.com
-    Password: 12345678
+    Password: 123456
 
 ### Postman Collection
     https://www.getpostman.com/collections/a468b131947d3aa702ff

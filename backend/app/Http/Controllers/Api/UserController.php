@@ -91,7 +91,7 @@ class UserController extends Controller
             $this->userModel()->updateData($userArray, $userId);
             return $this->message::successMessage(config("messages.update_message"));
         } catch (\Exception $ex) {
-            return $this->message::errorMessage();
+            return $this->message::errorMessage($ex->getMessage());
         }
     }
 

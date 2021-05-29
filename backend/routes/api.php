@@ -11,16 +11,16 @@ Route::group(['prefix' => 'v1'], function () {
 
     Route::group(['middleware' => 'auth:api'], function() {
         //User
-        Route::post('user-lists', [UserController::class, 'index'])->name("user.lists");
+        Route::get('user-lists', [UserController::class, 'index'])->name("user.lists");
         Route::post('store-user', [UserController::class, 'store'])->name("user.store");
-        Route::post('update-user/{id}', [UserController::class, 'update'])->name("user.update");
-        Route::get('delete-user/{id}', [UserController::class, 'delete'])->name("user.delete");
+        Route::put('update-user/{id}', [UserController::class, 'update'])->name("user.update");
+        Route::delete('delete-user/{id}', [UserController::class, 'delete'])->name("user.delete");
 
         //Product
-        Route::post('product-lists', [ProductController::class, 'index'])->name("product.lists");
+        Route::get('product-lists', [ProductController::class, 'index'])->name("product.lists");
         Route::post('store-product', [ProductController::class, 'store'])->name("product.store");
-        Route::post('update-product/{id}', [ProductController::class, 'update'])->name("product.update");
-        Route::get('delete-product/{id}', [ProductController::class, 'delete'])->name("product.delete");
+        Route::put('update-product/{id}', [ProductController::class, 'update'])->name("product.update");
+        Route::delete('delete-product/{id}', [ProductController::class, 'delete'])->name("product.delete");
 
         //Logged user
         Route::get('logout', [AuthController::class, 'logout'])->name("user.logout");

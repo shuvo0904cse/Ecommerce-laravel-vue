@@ -99,7 +99,7 @@ class ProductController extends Controller
             ];
             $this->productModel()->updateData($productArray, $productId);
 
-            return $this->message::successMessage(config("messages.save_message"));
+            return $this->message::successMessage(config("messages.update_message"));
         } catch (\Exception $ex) {
             return $this->message::errorMessage($ex->getMessage());
         }
