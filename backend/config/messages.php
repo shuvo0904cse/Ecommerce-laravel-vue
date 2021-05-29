@@ -1,0 +1,22 @@
+<?php
+return [
+    "login_message"                                 => "Successfully Login",
+    "logged_out_message"                            => "Successfully logged out",
+    "save_message"                                  => "Successfully Saved",
+    "update_message"                                => "Successfully Updated",
+    "delete_message"                                => "Successfully Deleted",
+    "unable_to_delete_yourself"                     => "You are unable to delete yourself",
+    "only_admin_can_delete"                         => "Only admin can delete this record",
+    "unable_to_delete"                              => "You are unable to delete",
+    "unable_to_update_information"                  => "You are unable to update information from here",
+    "not_exists"                                    => "Not Exists",
+    "already_completed"                             => "You have already completed this process",
+    "bad_request"                                   => "Bad Request",
+    "400"                                           => "Houston - We have a problem! Our team has been notified and they will be working to fix this ASAP!",
+    "executed_successfully"                         => "Executed Successfully",
+    "invalid_input"                                 => "Invalid Input",
+    "email_cannot_be_identified"                    => "Sorry your email cannot be identified",
+    "email_already_verified"                        => "Your e-mail is already verified. You can now login.",
+    "email_verified"                                => "Your e-mail is verified. You can now login.",
+    "unauthorized"                                  => "Unauthorized",
+];
