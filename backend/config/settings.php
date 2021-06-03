@@ -13,4 +13,6 @@ return [
         'order_by' => 'created_at',
         'order_direction' => 'desc',
     ],
+    "user_upload_path" => "user",
+    "product_upload_path" => "product",
 ];

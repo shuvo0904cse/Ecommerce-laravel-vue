@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ImageHelper;
 use App\Helpers\MessageHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductCollection;
 use App\Models\Product;
-use App\Services\ImageUploadService;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -40,29 +42,30 @@ class ProductController extends Controller
         //validation
         $validator = Validator::make($request->all(), [
             'title'         => 'required|string|max:191',
-            'code'          => 'required|string|max:191|unique:products,code',
-            'image'         => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'description'   => 'required'
+            'code'          => 'required|string|max:191|unique:products,code'
         ]);
         if ($validator->fails()) return $this->message::validationErrorMessage(null, $validator->errors());
 
+        DB::beginTransaction();
         try {
-            //save Image
-            if ($request->hasFile('image')) {
-                $image = $this->uploadImage()->upload($request->file("image"), config("setting.product_path"));
-            }
-
             //store
             $productArray = [
                 'title'         => $request->title,
                 'code'          => $request->code,
-                'image'         => isset($image) ? $image : null,
                 'description'   => $request->description
             ];
-            $user = $this->productModel()->storeData($productArray);
+            $product = $this->productModel()->storeData($productArray);
 
-            return $this->message::successMessage(config("messages.save_message"), $user);
+            //upload Image
+            if(!empty($request->images)){
+                foreach($request->images as $image){
+                    $this->uploadImage($image, $product->id);
+                }
+            }
+            DB::commit();
+            return $this->message::successMessage(config("messages.save_message"), $product);
         } catch (\Exception $ex) {
+            DB::rollBack();
             return $this->message::errorMessage($ex->getMessage());
         }
     }
@@ -84,25 +87,39 @@ class ProductController extends Controller
         ]);
         if ($validator->fails()) return $this->message::validationErrorMessage(null, $validator->errors());
 
+        DB::beginTransaction();
         try {
-            //save Image
-            if ($request->hasFile('image')) {
-                $image = $this->uploadImage()->upload($request->file("image"), config("setting.product_path"));
-            }
-
             //update
             $productArray = [
                 'title'         => $request->title,
                 'code'          => $request->code,
-                'image'         => isset($image) ? $image : $details->image,
                 'description'   => $request->description
             ];
             $this->productModel()->updateData($productArray, $productId);
 
+            //upload Image
+            if(!empty($request->images)){
+                foreach($request->images as $image){
+                    $this->uploadImage($image, $details->id);
+                }
+            }
+
+            DB::commit();
             return $this->message::successMessage(config("messages.update_message"));
         } catch (\Exception $ex) {
+            DB::rollBack();
             return $this->message::errorMessage($ex->getMessage());
         }
+    }
+
+    protected function uploadImage($image, $productId){
+        $imageName = ImageHelper::base64ToImage($image, config("settings.product_upload_path"));
+        //store Image
+        $imageArray = [
+            'image'         => $imageName,
+            'product_id'    => $productId
+        ];
+        $this->productImageModel()->storeData($imageArray);
     }
 
     /**
@@ -125,7 +142,7 @@ class ProductController extends Controller
         return new Product();
     }
 
-    private function uploadImage(){
-        return new ImageUploadService();
+    private function productImageModel(){
+        return new ProductImage();
     }
 }

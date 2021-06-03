@@ -1,76 +1,105 @@
 <template>
   <div>
-    <b-row>
-      <b-col md="4" offset-md="4">
-        <b-form @submit="onSubmit" @reset="onReset" v-if="show">
-          <b-form-group
-              id="input-group-1"
-              label="Email address:"
-              label-for="input-1"
-              description="We'll never share your email with anyone else."
-          >
-            <b-form-input
-                id="input-1"
-                v-model="form.email"
-                type="email"
-                placeholder="Enter email"
-                required
-            ></b-form-input>
-          </b-form-group>
+    <b-container>
+      <b-row>
+        <b-col md="4" offset-md="4">
+          <b-form @submit.stop.prevent="onSubmit">
+            <b-alert
+                :show="dismissCountDown"
+                dismissible
+                variant="warning"
+                @dismissed="dismissCountDown=0"
+                @dismiss-count-down="countDownChanged"
+            >
+             {{ auth_error }}
+            </b-alert>
 
-          <b-form-group id="input-group-2" label="Your Name:" label-for="input-2">
-            <b-form-input
-                id="input-2"
-                v-model="form.name"
-                placeholder="Enter name"
-                required
-            ></b-form-input>
-          </b-form-group>
+            <b-form-group label="Email Address" label-for="email-input">
+              <b-form-input
+                  id="email-input"
+                  name="email-input"
+                  v-model="email"
+                  v-validate="{ required: true, email: true }"
+                  :state="validateState('email-input')"
+                  aria-describedby="email-live-feedback"
+                  data-vv-as="Email Address"
+                  type="email"
+              ></b-form-input>
+              <b-form-invalid-feedback id="email-live-feedback">{{veeErrors.first('email-input') }}</b-form-invalid-feedback>
+            </b-form-group>
 
-          <b-button type="submit" variant="primary">Submit</b-button>
-          <b-button type="reset" variant="danger">Reset</b-button>
-        </b-form>
-        <b-card class="mt-3" header="Form Data Result">
-          <pre class="m-0">{{ form }}</pre>
-        </b-card>
-      </b-col>
-    </b-row>
+            <b-form-group label="Password" label-for="password-input">
+              <b-form-input
+                  id="password-input"
+                  name="password-input"
+                  v-model="password"
+                  v-validate="{ required: true }"
+                  :state="validateState('password-input')"
+                  aria-describedby="password-live-feedback"
+                  data-vv-as="Password"
+                  type="password"
+              ></b-form-input>
+              <b-form-invalid-feedback id="password-live-feedback">{{veeErrors.first('password-input') }}</b-form-invalid-feedback>
+            </b-form-group>
+
+            <b-button type="submit" variant="primary">Login</b-button>
+            <b-button class="ml-2" @click="resetForm()">Reset</b-button>
+          </b-form>
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
 <script>
+import {AUTH_REQUEST} from "@/store/actions/auth";
+
 export default {
-  name: 'Login',
+  name: "Login",
   data() {
     return {
-      form: {
-        email: '',
-        name: '',
-        food: null,
-        checked: []
-      },
-      foods: [{ text: 'Select One', value: null }, 'Carrots', 'Beans', 'Tomatoes', 'Corn'],
-      show: true
+      email: "",
+      password: "",
+      dismissSecs: 5,
+      dismissCountDown: 0
+    };
+  },
+  computed:{
+    auth_error(){
+      return this.$store.getters.auth_error;
     }
   },
   methods: {
-    onSubmit(event) {
-      event.preventDefault()
-      alert(JSON.stringify(this.form))
+    validateState(ref) {
+      if (this.veeFields[ref] && (this.veeFields[ref].dirty || this.veeFields[ref].validated)) {
+        return !this.veeErrors.has(ref);
+      }
+      return null;
     },
-    onReset(event) {
-      event.preventDefault()
-      // Reset our form values
-      this.form.email = ''
-      this.form.name = ''
-      this.form.food = null
-      this.form.checked = []
-      // Trick to reset/clear native browser form validation state
-      this.show = false
+    resetForm() {
+      this.email = "";
+      this.password = "";
       this.$nextTick(() => {
-        this.show = true
-      })
-    }
+        this.$validator.reset();
+      });
+    },
+    onSubmit() {
+      this.$validator.validateAll().then(result => {
+        if (result) {
+          const {email, password} = this;
+          this.$store.dispatch(AUTH_REQUEST, {email, password})
+              .then((response) => {
+                this.$router.push({name: 'Dashboard'});
+              })
+              .catch(error => {
+                this.dismissCountDown = this.dismissSecs
+              });
+        }
+      });
+    },
+    countDownChanged(dismissCountDown) {
+      this.dismissCountDown = dismissCountDown
+    },
   }
-}
+};
 </script>

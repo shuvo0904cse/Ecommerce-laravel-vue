@@ -109,7 +109,7 @@ trait BaseModel
     {
         parent::boot();
 
-        $user = Auth::user();
+        $user = auth('api')->user();
 
         //creating
         self::creating(function ($model) use ($user){

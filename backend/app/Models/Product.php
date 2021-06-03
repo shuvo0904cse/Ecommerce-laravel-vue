@@ -15,15 +15,21 @@ class Product extends Model
     protected $fillable = [
         'title',
         'code',
-        'image',
-        'description'
+        'description',
+        'created_by',
+        'updated_by',
+        'deleted_by'
     ];
+
+    public function images(){
+        return $this->hasMany(ProductImage::class);
+    }
 
     /**
      * Get Lists
      */
     public function getProductLists($request){
-        return $this->ofSearch($request)->ofUser()->ofOrder($request)->ofPaginate($request);
+        return $this->ofSearch($request)->ofRelation()->ofUser()->ofOrder($request)->ofPaginate($request);
     }
 
     /**
@@ -44,9 +50,17 @@ class Product extends Model
         $search = isset($request['search'])? $request['search']: "";
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'LIKE', '%' . $search . '%');
+                $q->where('title', 'LIKE', '%' . $search . '%')
+                  ->orWhere('code', 'LIKE', '%' . $search . '%');
             });
         }
         return $query;
+    }
+
+    /**
+     * Relation
+     */
+    public function scopeOfRelation($query){
+        return $query->with(['images']);
     }
 }

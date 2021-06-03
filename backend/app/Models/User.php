@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
@@ -21,7 +22,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'photo',
+        'role',
+        'created_by',
+        'updated_by',
+        'deleted_by'
     ];
 
     /**
@@ -43,7 +48,7 @@ class User extends Authenticatable
      * Get Lists
      */
     public function getUserLists($request){
-        return $this->ofSearch($request)->ofOrder($request)->ofPaginate($request);
+        return $this->ofSearch($request)->ofRole($request)->ofOrder($request)->ofPaginate($request);
     }
 
     /**
@@ -53,9 +58,23 @@ class User extends Authenticatable
         $search = isset($request['search'])? $request['search']: "";
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'LIKE', '%' . $search . '%');
+                $q->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('email', 'LIKE', '%' . $search . '%')
+                    ->orWhere('role', 'LIKE', '%' . $search . '%');
             });
         }
         return $query;
     }
+
+    /**
+     * Role
+     */
+    public function scopeOfRole($query, $request){
+        $role = isset($request['role'])? $request['role']: "";
+        if (!empty($role)) {
+            $query->where('role', Str::upper($role));
+        }
+        return $query;
+    }
+
 }
